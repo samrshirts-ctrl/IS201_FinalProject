@@ -1,0 +1,64 @@
+Img{
+    display: block;
+    width: 35%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+Body{
+    background-color: lightblue;
+    color: navy;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    text-align: center;
+    border: 5px solid darkblue;
+    margin: 20px;
+    padding: 50px;
+}
+
+.tableauPlaceholder{
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 40%;
+}
+
+Nav{
+    background-color: rgb(118, 191, 236);
+    padding: 10px;
+    overflow: hidden;
+}
+
+Nav a{
+    color: navy;
+    padding: 10px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    float: left;
+}
+
+Nav a:hover{
+    background-color: rgb(103, 174, 218);
+}
+
+.common{
+    text-align: center;
+}
+
+.header{
+    background-color: darkblue;
+    color: lightblue;
+    height: 100px;
+    line-height: 100px;
+}
+
+.footer{
+    background-color: darkblue;
+    color: lightblue;
+    height: 25px;
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}

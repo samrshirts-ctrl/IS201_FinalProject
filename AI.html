@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fishing Game</title>
+<style>
+    body {
+        margin: 0;
+        background: #87CEEB;
+        font-family: Arial, sans-serif;
+        user-select: none;
+        overflow: hidden;
+    }
+
+    #gameContainer {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        background: linear-gradient(#87CEEB 40%, #1E90FF 40%);
+    }
+
+    #instructions {
+        position: absolute;
+        top: 10px;
+        width: 100%;
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+        color: #000;
+        text-shadow: 1px 1px 2px white;
+    }
+
+    #startBtn {
+        position: absolute;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 25px;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    #water {
+        position: absolute;
+        top: 40%;
+        width: 100%;
+        height: 60%;
+        background: rgba(0, 100, 255, 0.3);
+        pointer-events: none;
+    }
+
+    /* Visible hook: simple grey J */
+    #hook {
+        width: 60px;
+        height: 120px;
+        position: absolute;
+        top: 5%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 100px;
+        font-weight: bold;
+        color: #555;
+        line-height: 100px;
+        text-align: center;
+        cursor: grab;
+        display: none;
+        z-index: 10;
+    }
+
+    .item {
+        width: 80px;
+        height: 80px;
+        position: absolute;
+        z-index: 5;
+    }
+
+    .fish {
+        background: url('https://img.icons8.com/color/96/fish.png') no-repeat center/contain;
+    }
+
+    .trash {
+        background: url('https://img.icons8.com/color/96/trash.png') no-repeat center/contain;
+    }
+
+    #score {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 26px;
+        font-weight: bold;
+        color: #000;
+        display: none;
+    }
+
+    #endMessage {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 40px;
+        font-weight: bold;
+        color: white;
+        display: none;
+        text-shadow: 2px 2px 4px black;
+    }
+
+    #restartBtn {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 25px;
+        font-size: 22px;
+        display: none;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <div id="instructions">
+        Drag the hook into the water to catch fish (+1). Avoid trash (-1).  
+        Win at +3. Lose at -3 or if all items are gone.
+    </div>
+    <button id="startBtn">Click to Start</button>
+
+    <div id="score">Score: 0</div>
+    <div id="hook">J</div>
+    <div id="water"></div>
+    <div id="endMessage"></div>
+    <button id="restartBtn">Restart</button>
+</div>
+
+<script>
+    const hook = document.getElementById("hook");
+    const game = document.getElementById("gameContainer");
+    const scoreDisplay = document.getElementById("score");
+    const endMessage = document.getElementById("endMessage");
+    const restartBtn = document.getElementById("restartBtn");
+    const startBtn = document.getElementById("startBtn");
+    const instructions = document.getElementById("instructions");
+
+    let score = 0;
+    let dragging = false;
+    let gameActive = false;
+
+    function spawnItems() {
+        for (let i = 0; i < 6; i++) {
+            const item = document.createElement("div");
+            item.classList.add("item");
+
+            if (Math.random() > 0.5) {
+                item.classList.add("fish");
+            } else {
+                item.classList.add("trash");
+            }
+
+            item.style.left = Math.random() * (window.innerWidth - 100) + "px";
+            item.style.top = (window.innerHeight * 0.45 +
+                Math.random() * (window.innerHeight * 0.5 - 100)) + "px";
+
+            game.appendChild(item);
+        }
+    }
+
+    function startGame() {
+        gameActive = true;
+        startBtn.style.display = "none";
+        instructions.style.display = "none";
+        hook.style.display = "block";
+        scoreDisplay.style.display = "block";
+        spawnItems();
+    }
+
+    startBtn.addEventListener("click", startGame);
+
+    hook.addEventListener("mousedown", () => {
+        if (gameActive) dragging = true;
+    });
+
+    window.addEventListener("mouseup", () => dragging = false);
+
+    window.addEventListener("mousemove", (e) => {
+        if (!dragging || !gameActive) return;
+
+        hook.style.left = (e.clientX - 30) + "px";
+        hook.style.top = (e.clientY - 60) + "px";
+
+        checkCollision();
+    });
+
+    function checkCollision() {
+        const hookRect = hook.getBoundingClientRect();
+        const items = document.querySelectorAll(".item");
+
+        items.forEach(item => {
+            const rect = item.getBoundingClientRect();
+
+            const overlap = !(
+                hookRect.right < rect.left ||
+                hookRect.left > rect.right ||
+                hookRect.bottom < rect.top ||
+                hookRect.top > rect.bottom
+            );
+
+            if (overlap) {
+                if (item.classList.contains("fish")) {
+                    score++;
+                } else {
+                    score--;
+                }
+
+                item.remove();
+                scoreDisplay.textContent = "Score: " + score;
+
+                if (score >= 3) endGame(true);
+                if (score <= -3) endGame(false);
+
+                // NEW: lose if all items are gone
+                if (document.querySelectorAll(".item").length === 0) {
+                    endGame(false);
+                }
+            }
+        });
+    }
+
+    function endGame(won) {
+        gameActive = false;
+        dragging = false;
+
+        endMessage.textContent = won ? "You Win!" : "You Lose!";
+        endMessage.style.display = "block";
+        restartBtn.style.display = "block";
+    }
+
+    restartBtn.addEventListener("click", () => {
+        score = 0;
+        scoreDisplay.textContent = "Score: 0";
+        endMessage.style.display = "none";
+        restartBtn.style.display = "none";
+
+        document.querySelectorAll(".item").forEach(i => i.remove());
+        spawnItems();
+        gameActive = true;
+    });
+</script>
+
+</body>
+</html>
